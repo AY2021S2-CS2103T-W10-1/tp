@@ -35,7 +35,7 @@ You can reach us at the email `chewterence[at]u.nus.edu`
 <img src="images/zechariahtan.png" width="200px">
 
 [[homepage](www.zechariahtan.com)]
-[[github](http://github.com/zechariahtan)] 
+[[github](http://github.com/zechariahtan)]
 [[portfolio](team/zechariahtan.md)]
 
 * Role: Testing
