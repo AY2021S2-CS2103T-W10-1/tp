@@ -216,10 +216,35 @@ From the diagram illustrated above:
 1. `AddressBookParser` would then have its `parse()` method invoked to parse the argument `"n/Alice"` and passes it to
    `FindPoolCommandParser`.
 1. `FindPoolCommandParser` parses the argument `"n/Alice"` and creates a `PooledPassengerContainsKeywordPredicate` which is returned to the `FindPoolCommandParser`.
-1. `FindPoolCommandParser` then creates a `FindPoolCommand`, and provides the newly created `PooledPassengerContainsKeywordPredicate` to it. The `FindPoolCommand` object is then returned to LogicManager.
-1. `LogicManager` would subsequently invoke the `execute()` method of the `FindPoolCommand`, which turn calls the `updateFilteredPoolList()` method in `Model`, causing the shown pool list to be updated according to the predicate in the `FindPoolCommand` object.
+1. `FindPoolCommandParser` then creates a `FindPoolCommand`, and provides the newly created `PooledPassengerContainsKeywordPredicate` to it. The `FindPoolCommand` object is then returned to `LogicManager`.
+1. `LogicManager` would subsequently invoke the `execute()` method of the `FindPoolCommand`, which in turn calls the `updateFilteredPoolList()` method in `Model`, causing the shown pool list to be updated according to the predicate in the `FindPoolCommand` object.
 1. A `Pool` object is then created with the list of passengers returned by `getPassengersFromIndexes()`, and then added to the model by the `addPool()` method.
 1. Finally, a `CommandResult` would be returned to `LogicManager` to indicate the completion status of the command.
+
+### Find feature
+
+The rationale behind expanding on the find feature is to allow for the user to find passengers by more attributes to improve usability. 
+Instead of being restricted to searching for names only, the user can now find other passengers with the same day or of a certain area. 
+This is vital as it is necessary to improve the usability for the user when attempting to find passengers to carpool with drivers.
+
+![Interactions Inside the Logic Component for the `find n/Lucy n/Adam` Command](images/FindSequenceDiagram.png)
+
+<div markdown="span" class="alert alert-info">:information_source: **Note:**  The `command` argument that is passed into
+`execute()`, represents the string `"find n/Lucy n/Adam"`, and has been abstracted for readability.
+<br>
+The lifeline for `FindCommandParser` should end at the destroy marker (X) but due to a limitation of PlantUML, the lifeline reaches the end of diagram.
+</div>
+
+From the diagram illustrated above:
+1. `LogicManager` has its `execute()` method called when a user enters the `"find n/Lucy n/Adam"` command.
+1. Object of `AddressBookParser` class is then accessed, which then subsequently creates `FindCommandParser` class object to help parse the user's command.
+1. `AddressBookParser` would then invoke the `parse()` method of `FindCommandParser`, with parameters `n/Lucy n/Adam`, to parse the arguments `n/Lucy n/Adam`.
+1. `FindCommandParser` parses the arguments `n/Lucy n/Adam` and creates a `NameContainsKeywordPredicate` object named `predicate` which is returned to the `FindCommandParser` object.
+1. `FindCommandParser` then instantiates a `FindCommand` object with `predicate` as a parameter. The `FindCommand` object is then returned to `LogicManager`.
+1. `LogicManager` would subsequently invoke the `execute()` method of `FindCommand`, which in turn calls the `updateFilteredPoolList()` method in `Model`, causing the shown pool list to be updated according to `predicate` in the `FindCommand` object.
+1. A `CommandResult` object is then created with a message which includes the number of passengers found on the list updated by `updateFilteredPoolList()`.
+1. Finally, the `CommandResult` object is returned to `LogicManager`.
+
 
 --------------------------------------------------------------------------------------------------------------------
 
@@ -397,41 +422,77 @@ testers are expected to do more *exploratory* testing.
 
 ### Launch and shutdown
 
-1. Initial launch
+1. Initial launch.
 
-   1. Download the jar file and copy into an empty folder
+   1. Download the jar file and copy into an empty folder.
 
    1. Double-click the jar file Expected: Shows the GUI with a set of sample contacts. The window size may not be optimum.
 
-1. Saving window preferences
+1. Saving window preferences.
 
    1. Resize the window to an optimum size. Move the window to a different location. Close the window.
 
    1. Re-launch the app by double-clicking the jar file.<br>
        Expected: The most recent window size and location is retained.
 
-1. _{ more test cases …​ }_
-
 ### Deleting a passenger
 
-1. Deleting a passenger while all passengers are being shown
+1. Deleting a passenger while all passengers are being shown.
 
    1. Prerequisites: List all passengers using the `list` command. Multiple passengers in the list.
 
-   1. Test case: `delete 1`<br>
-      Expected: First contact is deleted from the list. Details of the deleted contact shown in the status message. Timestamp in the status bar is updated.
+   1. Test case: `delete 1`.<br>
+      Expected: First contact is deleted from the list. Name of the deleted contact shown in the status message.
 
-   1. Test case: `delete 0`<br>
-      Expected: No passenger is deleted. Error details shown in the status message. Status bar remains the same.
+   1. Test case: `delete 0`.<br>
+      Expected: No passenger is deleted. Error details shown in the status message. Text in command bar turns red.
 
-   1. Other incorrect delete commands to try: `delete`, `delete x`, `...` (where x is larger than the list size)<br>
+   1. Other incorrect delete commands to try: `delete`, `delete x`, `...` (where x is larger than the list size).<br>
       Expected: Similar to previous.
 
-1. _{ more test cases …​ }_
+1. Deleting multiple passengers while all passengers are being shown.
+   
+    1. Prerequisites: List all passengers using the `list` command. Multiple passengers in the list.
+    
+    1. Test case: `delete 1 2`.<br>
+       Expected: First and second contact is deleted from the list. Names of deleted contacts are shown in the status message.
+
+### Finding a passenger
+
+1. Finding passengers by name while all passengers shown.
+
+    1. Prerequisites: Using sample passengers, list all passengers using the `list` command. Multiple passengers in the list.
+    
+    1. Test case: `find n/bernice`.<br>
+       Expected: Details of passenger named `Bernice Yu` is shown. Status message shows 1 passenger listed.
+
+    1. Test case: `find n/alex`.<br>
+       Expected: No passengers are shown. Status message shows 0 passenger listed.
+       
+    1. Test case: `find n/ROY n/lEnny`.<br>
+       Expected: Details of passengers named `Roy Balakrishnan` and `Lenny Hoon` shown. Status message shows 2 passengers listed.
+       
+    1. Test case: `find n/   David lI`.<br>
+       Expected: Details of passenger named `David Li` is shown. Status message shows 1 passenger listed.
+
+       
+1. Finding passengers by tag while all passengers are shown.
+
+    1. Prerequisites: Using sample passengers, list all passengers using the `list` command. Multiple passengers in the list.
+    
+    1. Test case: `find tag/finance`.<br>
+       Expected: Details of `Bernice Yu` and `Roy Balakrishnan` are shown. Status message shows 2 passengers listed.
+       
+    1. Test case: `find tag/marketing tag/sales`.<br>
+       Expected: Details of `Bernice Yu`, `Irfan Ibrahim` and `Turner Peck` are shown. Status message shows 3 passengers listed.
+       
+    1. Test case: `find tag/marketing sales`.<br>
+       Expected: Passengers are shown are same as previous. Status message shows tag provided is invalid. 
+
 
 ### Saving data
 
-1. Dealing with missing/corrupted data files
+1. Dealing with missing/corrupted data files.
 
    1. _{explain how to simulate a missing/corrupted file, and the expected behavior}_
 
